@@ -1,0 +1,137 @@
+.home {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.home>.webview {
+  flex: 1;
+  height: 100%;
+}
+
+.home>.controls-wrapper {
+  position: relative;
+  height: 100%;
+  user-select: none;  
+}
+
+.controls-wrapper>.controls {
+  position: relative;
+  width: 400px;
+  height: 100%;
+  background-color: #222b39;
+  overflow: scroll;
+}
+
+.controls-wrapper>.resizeable {
+  position: absolute;
+  width: 10px;
+  height: 100%;
+  left: -5px;
+  top: 0;
+}
+
+.controls-wrapper>.tool {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  color: #ffffff;
+  cursor: pointer;
+  z-index: 999;
+}
+
+.controls-wrapper>.resizeable:hover {
+  cursor: col-resize;
+}
+
+.controls>.content {
+  min-width: 150px;
+}
+
+.controls>.content>.section {
+  margin-left: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ffffff;
+}
+
+.controls>.content>.section>.header {
+  margin-bottom: 10px;
+  font-size: 20px;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+}
+
+.controls>.float-menu {
+  position: fixed;
+  display: none;
+  width: 150px;
+  height: 300px;
+  background: #ffffff;
+  z-index: 999;
+}
+
+.controls>.float-menu.show {
+  display: block;
+}
+
+.element-tree {
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.element {
+  position: relative;
+  font-weight: 400;
+  font-family: Menlo, Monaco, 'Courier New', monospace;
+  cursor: pointer;
+  word-wrap: none;
+  white-space: nowrap;
+}
+
+.element::before {
+  content: '';
+  position: absolute;
+  top: 30px;
+  bottom: 30px;
+  left: 0;
+  width: 1px;
+  background: #444444;
+}
+
+.element.folded>.element,
+.element.folded>.text {
+  display: none;
+}
+
+/* .element>.tag-start,
+.element>.tag-end,
+.element>.tag-content {
+  color: #ffffff;
+} */
+
+.element>.tag-start,
+.element>.tag-end {
+  display: inline-block;
+  word-wrap: none;
+  white-space: nowrap;
+}
+
+.element>.element, 
+.element>.text {
+  margin-left: 20px;
+  color: #ffffff;
+}
+
+.tag-name {
+  color: rgb(221,70,76);
+}
+
+.tag-attribute>.tag-key {
+  color: rgb(253,139,29);
+}
+
+.tag-attribute>.tag-value {
+  color: rgb(143,193,62);
+}
