@@ -69,7 +69,8 @@ module.exports = {
   devServer: {
 		historyApiFallback: true,
 		inline: true,
-		port: 8080
+    port: 8080,
+    // hot: true
   },
   // 注释了试试，webpack会建议每个js文件大小不要超过250kb,但开发环境因为包含了sourcemap并且代码未压缩所以一般都会超过这个大小, 可以在开发环境把这个warning关闭
   performance: {

@@ -1,6 +1,5 @@
 import inject from '../../inject/inject.js'
 import path from 'path'
-import fs from 'fs'
 
 export default class WebView extends React.Component {
   constructor() {
@@ -21,10 +20,18 @@ export default class WebView extends React.Component {
   }
 
   componentWillReceiveProps(props) {
-    if (props.reload != this.reload) {
-      webview.send('element-tree')
+    const { reload, focus, url } = props
+    console.log(url)
+    if (this.url != url) {
+      this.refs.webview.loadURL(url)
+      this.url = url
     }
-    this.reload = props.reload
+    if (typeof reload == 'boolean' && reload != this.reload) {
+      webview.send('element-tree')
+    } else if (typeof focus == 'number') {
+      webview.send('focus', focus)
+    }
+    this.reload = reload
   }
 
   componentWillUnmount() {
@@ -37,12 +44,15 @@ export default class WebView extends React.Component {
     webview.insertCSS(inject)
     webview.executeJavaScript(
     `
+      const disabled = ['head', 'meta', 'link', 'script']
       const ipcRenderer = nodeRequire('electron').ipcRenderer;
       const html = document.querySelector('html')
       const root = {
-        tag: html.tagName.toLowerCase()
+        tag: html.tagName.toLowerCase(),
+        nid: 0
       }
       const tree = { root }
+      let i = 1
       function deep(currentElement, current) {
         if (currentElement.childNodes.length <= 0 || (currentElement.childNodes.length == 1 && currentElement.childNodes[0].nodeName == '#comment')) return
         current.children = [];
@@ -50,6 +60,8 @@ export default class WebView extends React.Component {
           const _child = {}
           if (!child.tagName) {
             _child.text = child.textContent
+            _child.nid = i
+            i++
             current.children.push(_child)
           } else {
             _child.tag = child.tagName.toLowerCase()
@@ -58,18 +70,47 @@ export default class WebView extends React.Component {
             if (child.classList.value) _child.class = child.classList.value
             if (child.id) _child.id = child.id
             if (child.name) _child.name = child.name
+            _child.nid = i
+            child.classList.add('_element-' + i)
+            i++
             current.children.push(_child)
             deep(child, _child)
           }
         })
       }
-      ipcRenderer.on('element-tree', function() {
+      ipcRenderer.on('element-tree', e => {
         deep(html, root)
         ipcRenderer.sendToHost({
           type: 'element-tree',
           data: tree
         });
       });
+      ipcRenderer.on('focus', (e, nid) => {
+        if (!nid) return
+          const hovered = document.querySelectorAll('._hover');
+          [].forEach.call(hovered, item => {
+            item.classList.remove('_hover')
+          })
+        const _element = document.querySelector('._element-' + nid)
+        if (getComputedStyle(_element).position == 'static') {
+          _element.style.position = 'relative'
+        }
+        _element.classList.add('_hover')
+      })
+      // ipcRenderer.on('hover', (e, selector) => {
+      //   if (!selector) return
+      //   const hovered = document.querySelectorAll('._hover');
+      //   [].forEach.call(hovered, item => {
+      //     item.classList.remove('_hover')
+      //   })
+      //   const _elements = document.querySelectorAll(selector);
+      //   [].forEach.call(_elements, _element => {
+      //     if (getComputedStyle(_element).position == 'static') {
+      //       _element.style.position = 'relative'
+      //     }
+      //     _element.classList.add('_hover')
+      //   })
+      // })
       // ipcRenderer.on('cookie', function() {
       //   ipcRenderer.sendToHost({
       //     type: 'cookie',
@@ -79,6 +120,7 @@ export default class WebView extends React.Component {
     `, res => {
       webview.send('element-tree');
       webview.send('cookie');
+      webview.openDevTools();
     })
 
     webview.addEventListener('ipc-message', e => {
@@ -86,7 +128,7 @@ export default class WebView extends React.Component {
       if (type == 'element-tree') {
         onChange(data)
       } else if (type == 'cookie') {
-        console.log(data)
+        // console.log(data)
       }
     })
     webview.getWebContents().session.cookies.get({}, (err, cookies) => {
@@ -95,11 +137,11 @@ export default class WebView extends React.Component {
   }
 
   render() {
-    const { props: { src } } = this
+    const { url } = this.props
     return (
       <webview ref="webview" id="webview"
         className="webview" 
-        src={src} 
+        src={url}
         disablewebsecurity="true" 
         nodeintegration="true"
         partition="persist:juejin"

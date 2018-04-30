@@ -6,13 +6,13 @@ export default class Controls extends React.Component {
     this.resizeable = false
     this.handleMouseMove = this.handleMouseMove.bind(this)
     this.state = {
-      width: 400,
       tree: {},
       floatMenu: {
         show: false,
         x: 0,
         y: 0
-      }
+      },
+      focus: -1
     }
   }
 
@@ -26,9 +26,7 @@ export default class Controls extends React.Component {
 
   componentWillReceiveProps(props) {
     const { tree } = props
-    this.setState({
-      tree: this.resolveTree(tree)
-    })
+    this.setState({ tree })
   }
 
   deep(tree, cb) {
@@ -55,33 +53,53 @@ export default class Controls extends React.Component {
   }
 
   handleElementMouseUp(e) {
-    if (e.button != 2) {
+    const { show } = this.state.floatMenu
+    if (e.button != 2 && show) {
       return this.setState({
         floatMenu: {
           show: false
         }
       })
+    } else if (e.button == 2) {
+      const element = this.findElement(e, 'element', 'element-tree')
+      if (!element) return
+      const { nid } = element.dataset
+      let focusNid = this.state.focus
+      const tree = this.dealNodeById(nid, node => {
+        node.folded = false
+        focusNid = node.nid
+      })
+      const { pageX, pageY } = e
+      this.setState({
+        floatMenu: {
+          x: pageX,
+          y: pageY,
+          show: true
+        },
+        focus: focusNid,
+        tree
+      })
     }
-    const element = this.findElement(e, 'element', 'element-tree')
-    if (!element) return
-    const { pageX, pageY } = e
-    this.setState({
-      floatMenu: {
-        x: pageX,
-        y: pageY,
-        show: true
-      }
-    })
   }
 
   handleElementClick(e) {
     const element = this.findElement(e, 'element', 'element-tree')
     if (!element) return
+    let focusNode
     const nid = element.dataset.nid
     const tree = this.dealNodeById(nid, (node => {
-      if (node) node.folded = !node.folded
+      if (node) {
+        node.folded = !node.folded
+        focusNode = node
+      }
     }))
-    this.setState({ tree })
+    if (!focusNode) return
+    const { onElementFocus } = this.props
+    typeof onElementFocus == 'function' && onElementFocus(focusNode.nid)
+    this.setState({ 
+      tree, 
+      focus: focusNode.nid
+    })
   }
 
   dealNodeById(nid, cb) {
@@ -92,37 +110,6 @@ export default class Controls extends React.Component {
         return false
       }
     })
-    return tree
-  }
-
-  resolveTree(tree) {
-    let i = 0
-    this.deep(tree, (node, parent) => {
-      const { children } = node
-      const shouldFolded = children && (children.length >= 1 || children[0].tag || hildren[0].text.length > 20)
-      node.folded = shouldFolded
-      node.nid = i++
-      let selector = ''
-      if (parent) {
-        selector += parent.selector
-        selector += '>'
-        if (node.tag) {
-          selector += node.tag
-        }
-        if (node.id) {
-          selector += '#'
-          selector += node.id
-        }
-        if (node.class) {
-          selector += '.'
-          selector += node.class
-        }
-      } else {
-        selector = 'html'
-      }
-      node.selector = selector
-    })
-    console.log(tree)
     return tree
   }
 
@@ -156,9 +143,10 @@ export default class Controls extends React.Component {
   }
 
   handleRender(node) {
+    const { focus } = this.state
     return (
       node.tag
-      ? <div className="element" data-nid={node.nid} key={node.nid}>
+      ? <div className={'element' + (focus == node.nid ? ' focus' : '')} data-nid={node.nid} key={node.nid}>
           {/* <div className="tag-start"> */}
             {this.completeTag(node)}
           {/* </div> */}
@@ -206,10 +194,9 @@ export default class Controls extends React.Component {
 
   handleMouseMove(e) {
     const { pageX, pageY } = e
+    const { controls } = this.refs
     if (pageX > 0) {
-      this.setState({
-        width: windowWidth - pageX
-      })
+      controls.style.width = windowWidth - pageX + 'px'
     }
   }
 
@@ -218,6 +205,7 @@ export default class Controls extends React.Component {
   }
 
   render() {
+    console.log('render')
     const { props: { onTreeReload }, handleMouseDown, handleElementClick, handleElementMouseUp, handleClick, state: { width, tree, floatMenu: { show, x, y } }, renderTree } = this
     return (
       <div className="controls-wrapper">
@@ -225,7 +213,7 @@ export default class Controls extends React.Component {
         <div className="tool">
           <div className="reload" onClick={onTreeReload}>刷新</div>
         </div>
-        <div className="controls" style={{width: width + 'px'}} onClick={handleClick.bind(this)}>
+        <div className="controls" ref="controls" onClick={handleClick.bind(this)}>
           <div className={'float-menu' + (show ? ' show' : '')} style={{left: x + 'px', top: y + 'px'}}></div>
           <div className='content'>
             <div className="section">

@@ -4,7 +4,7 @@ const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
-if (process.env.NODE_ENV=='development') {
+if (process.env.NODE_ENV == 'development') {
   app.on('ready', () => {
     const window = new BrowserWindow({ width: 1000, height: 800 })
     window.loadURL('http://localhost:8080')
@@ -15,8 +15,8 @@ if (process.env.NODE_ENV=='development') {
   // 保持一个对于 window 对象的全局引用，不然，当 JavaScript 被 GC，
   // window 会被自动地关闭
   const Index = require('./pages/index/index.js')
-  const index = new Index({autoOpenDevTools: true, url: 'https://www.baidu.com'}) 
-
+  const index = new Index({autoOpenDevTools: true}) 
+  console.log(index)
   // 当所有窗口被关闭了，退出。
   app.on('window-all-closed', function() {
     // 在 OS X 上，通常用户在明确地按下 Cmd + Q 之前

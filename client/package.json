@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "NODE_ENV=production webpack --config webpack.prod.conf.js",
     "dev": "NODE_ENV=development webpack-dev-server --config webpack.dev.conf.js",
-    "electron:dev": "NODE_ENV=development electron ."
+    "electron:dev": "NODE_ENV=development electron . --dedug 5858"
   },
   "keywords": [],
   "author": "",
