@@ -1,4 +1,5 @@
 let windowWidth = window.innerWidth
+let entry = ''
 
 export default class Controls extends React.Component {
   constructor() {
@@ -12,7 +13,8 @@ export default class Controls extends React.Component {
         x: 0,
         y: 0
       },
-      focus: -1
+      focus: -1,
+      tableData: []
     }
   }
 
@@ -123,7 +125,7 @@ export default class Controls extends React.Component {
             return (
               <span className="tag-attribute" key={index}>
                 {' '}
-                { 
+                {
                   include == 'id' 
                   ? <span className="tag-key color-blue">{'id'}</span> 
                   : <span className="tag-key">{include}</span>
@@ -179,6 +181,26 @@ export default class Controls extends React.Component {
     })
   }
 
+  handleMark({type, attribute}) {
+    const nid = this.state.focus
+    this.dealNodeById(nid, node => {
+      const hasAttribute = attribute == 'text' ? !!node[attribute] : !!node.children[0].text
+      if (hasAttribute) {
+        return alert('当前选择元素无' + attribute + '属性')
+      } else {
+        const { tableData } = this.state
+        tableData.push({
+          index: tableData.length + 1, 
+          selector: node.selector,
+          attribute,
+          type,
+          value: node.attribute
+        })
+        this.setState({ tableData })
+      }
+    })
+  }
+
   handleResize() {
     windowWidth = window.innerWidth
   }
@@ -204,9 +226,18 @@ export default class Controls extends React.Component {
     this.resizeable = true
   }
 
+  handleInputEntry(e) {
+    const { value } = e.target
+    entry = value
+  }
+
+  goTo() {
+    this.props.handleGoToUrl(entry)
+  }
+
   render() {
     console.log('render')
-    const { props: { onTreeReload }, handleMouseDown, handleElementClick, handleElementMouseUp, handleClick, state: { width, tree, floatMenu: { show, x, y } }, renderTree } = this
+    const { props: { onTreeReload }, goTo, handleMouseDown, handleElementClick, handleMark, handleElementMouseUp,handleInputEntry, handleClick, state: { width, tableData, tree, floatMenu: { list, show, x, y } }, renderTree } = this
     return (
       <div className="controls-wrapper">
         <div className="resizeable" onMouseDown={handleMouseDown.bind(this)}></div>
@@ -214,8 +245,40 @@ export default class Controls extends React.Component {
           <div className="reload" onClick={onTreeReload}>刷新</div>
         </div>
         <div className="controls" ref="controls" onClick={handleClick.bind(this)}>
-          <div className={'float-menu' + (show ? ' show' : '')} style={{left: x + 'px', top: y + 'px'}}></div>
+          <div className={'float-menu' + (show ? ' show' : '')} style={{left: x + 'px', top: y + 'px'}}>
+            <div className="menu-item">
+              标记数据
+              <div className="submenu">
+                <div className="submenu-item" 
+                  onClick={handleMark.bind(this, {type: 'data', attribute: 'src'})}>src</div>
+                <div className="submenu-item"
+                  onClick={handleMark.bind(this, {type: 'data', attribute: 'text'})}>text</div>
+                <div className="submenu-item"
+                  onClick={handleMark.bind(this, {type: 'data', attribute: 'href'})}>href</div>
+              </div>
+            </div>
+            <div className="menu-item">
+              标记跳转
+              <div className="submenu">
+                <div className="submenu-item"
+                  onClick={handleMark.bind(this, {type: 'skip', attribute: 'src'})}>src</div>
+                <div className="submenu-item"
+                  onClick={handleMark.bind(this, {type: 'skip', attribute: 'text'})}>text</div>
+                <div className="submenu-item"
+                  onClick={handleMark.bind(this, {type: 'skip', attribute: 'href'})}>href</div>
+              </div>
+            </div>
+          </div>
           <div className='content'>
+            <div className="section">
+              <div className='header'>
+                <div className="label">入口</div>
+              </div>
+              <div className='entry'>
+                <input onChange={handleInputEntry.bind(this)}></input>
+                <div className='submit' onClick={goTo.bind(this)}>前往</div>
+              </div>
+            </div>
             <div className="section">
               <div className="header">
                 <div className="label">页面结构</div>
@@ -225,7 +288,38 @@ export default class Controls extends React.Component {
                 {this.renderTree(tree)}
               </div>
             </div>
-            <div className="label"></div>
+            <div className='section'>
+              <div className='header'>
+                <div className='label'>任务步骤</div>
+              </div>
+              <table>
+                  <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>句柄</th>
+                    <th>类型</th>
+                    <th>属性</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      tableData.map((data, index) => (
+                        <tr key={index}>
+                          <td>{data.index}</td>
+                          <td>{ '...' + data.selector.substr(-10, 10)}</td>
+                          <td>{data.type == 'data' ? '数据' : '跳转'}</td>
+                          <td>{data.attribute}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+            </div>
+            <div className='section'>
+              <div className='header'>
+                <div className='label'>完成</div>  
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -34,6 +34,7 @@
 .webview-wrapper>.webview {
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
 
 .home>.controls-wrapper {
@@ -105,22 +106,79 @@
   justify-content: space-between;
 }
 
+.controls>.content>.section>.entry {
+  display: flex;
+}
+
+.controls>.content>.section>.entry>input {
+  margin-right: 20px;
+  flex: 1;
+}
+
+.controls>.content>.section>.entry>.submit {
+  margin-right: 20px;  
+  color: #ffffff;
+  font-size: 20px;
+}
+
 .controls>.float-menu {
   position: fixed;
   display: none;
-  width: 150px;
-  padding: 20px;
   background: #ffffff;
   z-index: 999;
+}
+
+table {
+  color: #ffffff;
+}
+
+td {
+  padding: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .controls>.float-menu.show {
   display: block;
 }
 
+.controls .menu-item {
+  padding: 10px;
+  line-height: 20px;
+}
+
+.controls .menu-item:hover {
+  position: relative;
+  background-color: #3774d9;
+  color: #ffffff;
+}
+
+.controls .menu-item:hover .submenu {
+  position: absolute;  
+  background-color: #ffffff;
+  color: #000000;
+  display: block;
+  top: 0;
+  left: 100%;
+}
+
+.controls .menu-item:hover .submenu .submenu-item {
+  padding: 10px;
+  line-height: 20px;
+}
+
+.controls .menu-item:hover .submenu .submenu-item:hover {
+  background-color: #3774d9;
+  color: #ffffff;
+}
+
+.controls .submenu {
+  display: none;
+}
+
 .element-tree {
   color: #ffffff;
-  font-size: 20px;
+  font-size: 18px;
   /* background-color: rgba(60,60,60,.5); */
   min-width: 300px;
 }

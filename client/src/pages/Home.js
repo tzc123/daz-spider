@@ -66,10 +66,11 @@ export default class Home extends React.Component {
   }
 
   handleTreeReload() {
-    const { reload } = this.state
-    this.setState({
-      reload: !reload
-    })
+    // const { reload } = this.state
+    // this.setState({
+    //   reload: !reload
+    // })
+    window.location.reload()
   }
 
   handleElementFocus(nid) {
@@ -80,8 +81,7 @@ export default class Home extends React.Component {
     })
   }
 
-  handleGoToUrl() {
-    const url = this.refs.url.value
+  handleGoToUrl(url) {
     this.setState({ url })
   }
 
@@ -90,14 +90,12 @@ export default class Home extends React.Component {
     return (
       <div className="home">
         <div className="webview-wrapper">
-          <div className="toolbar">
-            <div className="back btn">返回</div>
-            <input className="url-input" ref='url'></input>
-            <div className="goto btn" onClick={handleGoToUrl.bind(this)}>前往</div>
-          </div>
           <WebView url={url} onChange={handleChange.bind(this)} reload={reload} focus={focus}></WebView>
         </div>
-        <Controls onElementFocus={handleElementFocus.bind(this)} onTreeReload={handleTreeReload.bind(this)} tree={tree}/>
+        <Controls onElementFocus={handleElementFocus.bind(this)} 
+          handleGoToUrl={handleGoToUrl.bind(this)}
+          onTreeReload={handleTreeReload.bind(this)} 
+          tree={tree}/>
       </div>
     )
   }

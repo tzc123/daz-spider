@@ -31,7 +31,6 @@ export default class WebView extends React.Component {
     } else if (typeof focus == 'number') {
       webview.send('focus', focus)
     }
-    this.reload = reload
   }
 
   componentWillUnmount() {
@@ -97,29 +96,9 @@ export default class WebView extends React.Component {
         }
         _element.classList.add('_hover')
       })
-      // ipcRenderer.on('hover', (e, selector) => {
-      //   if (!selector) return
-      //   const hovered = document.querySelectorAll('._hover');
-      //   [].forEach.call(hovered, item => {
-      //     item.classList.remove('_hover')
-      //   })
-      //   const _elements = document.querySelectorAll(selector);
-      //   [].forEach.call(_elements, _element => {
-      //     if (getComputedStyle(_element).position == 'static') {
-      //       _element.style.position = 'relative'
-      //     }
-      //     _element.classList.add('_hover')
-      //   })
-      // })
-      // ipcRenderer.on('cookie', function() {
-      //   ipcRenderer.sendToHost({
-      //     type: 'cookie',
-      //     data: document.cookie
-      //   });
-      // });
     `, res => {
       webview.send('element-tree');
-      webview.send('cookie');
+      // webview.send('cookie');
       webview.openDevTools();
     })
 
